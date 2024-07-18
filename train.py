@@ -16,7 +16,7 @@ from torchvision.transforms import functional as F
 class PresetTrain:
     def __init__(self, num_samples):
         self.transforms = T.Compose([
-            T.Downsample(num_samples=num_samples),
+            T.DownsampleV(voxel_size=0.01, target_num_points=num_samples),
             T.ToTensor(),
             T.Flaten()
         ])
@@ -28,7 +28,7 @@ class PresetTrain:
 class PresetEval:
     def __init__(self, num_samples):
         self.transforms = T.Compose([
-            T.Downsample(num_samples=num_samples),
+            T.DownsampleV(voxel_size=0.01, target_num_points=num_samples),
             T.ToTensor(),
             T.Flaten()
 
@@ -44,8 +44,8 @@ def main(args):
 
     results_file = "results{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-    train_dataset = POINTDataset(args.data_path, train=True, transforms=PresetTrain(num_samples=2024))
-    val_dataset = POINTDataset(args.data_path, train=False, transforms=PresetEval(num_samples=2024))
+    train_dataset = POINTDataset(args.data_path, train=True, transforms=PresetTrain(num_samples=8096))
+    val_dataset = POINTDataset(args.data_path, train=False, transforms=PresetEval(num_samples=8096))
 
     num_workers = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])
     train_data_loader = data.DataLoader(train_dataset,
@@ -71,7 +71,7 @@ def main(args):
     lr_scheduler = train_and_eval.create_lr_scheduler(optimizer, len(train_data_loader), args.epochs,
                                        warmup=True, warmup_epochs=2)
     criterion = nn.MSELoss()
-    current_mae = 1.0
+    current_mae = 20.0
     start_time = time.time()
     for epoch in range(args.epochs):
         loss, lr = train_and_eval.train_one_epoch(model, train_data_loader, optimizer, criterion, lr_scheduler, device, epoch, scaler)

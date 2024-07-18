@@ -1,1 +1,1 @@
-from .model import TNet, PointNet
+from .model import TNet, PointNet, New_PointNet
